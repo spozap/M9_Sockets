@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My Application</string>
+    <string name="connect">Provar conexió</string>
+    <string name="noConectat">No conectat</string>
+    <string name="conectat">Connexió establerta</string>
+    <string name="enterIp">Introdueix direcció IP</string>
 </resources>
