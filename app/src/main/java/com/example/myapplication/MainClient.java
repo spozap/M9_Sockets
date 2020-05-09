@@ -1,11 +1,13 @@
 package com.example.myapplication;
 
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,6 +28,8 @@ public class MainClient extends AppCompatActivity {
     private static EditText server;
     private ImageView imgStatus;
     private TextView txtViewStatus;
+    private Switch tipusConexio;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,6 +41,21 @@ public class MainClient extends AppCompatActivity {
         server = findViewById(R.id.ipTextView);
         imgStatus = findViewById(R.id.imgViewStatus);
         txtViewStatus = findViewById(R.id.txtViewStatus);
+        tipusConexio = findViewById(R.id.tipusconexio);
+
+        imgStatus.setBackgroundColor(Color.rgb(255,0,0));
+
+        tipusConexio.setChecked(false);
+        tipusConexio.setTextOff("Conexió manual");
+        tipusConexio.setTextOn("Conexió automàtica");
+
+
+        if(tipusConexio.isChecked()){
+
+            // Si la opció de conexió automàtica està habilitada , es deshabilita el botó de conexió manual
+            connectBtn.setVisibility(View.GONE);
+
+        }
 
         connectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -45,11 +64,8 @@ public class MainClient extends AppCompatActivity {
                 if(server.getText().toString().isEmpty()){
                     Toast.makeText(getApplicationContext(),"La direcció IP no pot estar buida!",Toast.LENGTH_SHORT).show();
                 } else {
-                  if(conectar(server.getText().toString())){
-
-                  } else {
-
-                  }
+                    ComprobaEstat estat = new ComprobaEstat(server.getText().toString().trim());
+                    estat.execute();
                 }
             }
         });
@@ -120,6 +136,55 @@ public class MainClient extends AppCompatActivity {
 
         return  connected;
 
+    }
+
+    public class ComprobaEstat extends AsyncTask<Void,Void,Boolean> {
+
+        private String ip;
+
+        public ComprobaEstat(String ip){
+            this.ip = ip;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+
+            Socket socket = null;
+            boolean status = false;
+
+            try {
+                socket = new Socket(ip,PORT);
+
+                status = socket.isConnected();
+
+                socket.close();
+
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return status;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean status) {
+            super.onPostExecute(status);
+
+            if (status){
+
+                imgStatus.setBackgroundColor(Color.rgb(98,236,0));
+                txtViewStatus.setText(R.string.conectat);
+
+            } else {
+
+                imgStatus.setBackgroundColor(Color.rgb(255,0,0));
+                txtViewStatus.setText("No conectat");
+
+            }
+        }
     }
 
 }

@@ -4,4 +4,6 @@
     <string name="noConectat">No conectat</string>
     <string name="conectat">Connexió establerta</string>
     <string name="enterIp">Introdueix direcció IP</string>
+    <string name="comanda">Esctriu la comanda a executar</string>
+    <string name="enviacomanda">Envia comanda</string>
 </resources>

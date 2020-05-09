@@ -8,8 +8,7 @@
         android:layout_width="300px"
         android:layout_height="300px"
         android:layout_gravity="center"
-        android:layout_marginTop="50dp"
-        android:background="@color/noConectat"/>
+        android:layout_marginTop="50dp"/>
 
     <TextView
         android:id="@+id/txtViewStatus"
@@ -30,11 +29,45 @@
         android:layout_marginTop="10dp"
         android:layout_height="75dp"/>
 
-    <Button
-        android:id="@+id/connectBtn"
+    <EditText
+        android:id="@+id/comandaTextView"
         android:layout_width="match_parent"
-        android:text="@string/connect"
-        android:layout_gravity="center"
-        android:layout_height="50dp"/>
+        android:hint="@string/comanda"
+        android:gravity="center"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_height="75dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/connectBtn"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_marginLeft="5dp"
+            android:text="@string/connect"
+            android:layout_gravity="center"
+            android:layout_height="50dp"/>
+
+        <Button
+            android:id="@+id/comandaBtn"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_marginRight="5dp"
+            android:text="@string/enviacomanda"
+            android:layout_gravity="center"
+            android:layout_height="50dp"/>
+
+    </LinearLayout>
+
+    <Switch
+        android:id="@+id/tipusconexio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Switch" />
+
 
 </LinearLayout>
