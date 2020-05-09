@@ -195,6 +195,7 @@ public class MainClient extends AppCompatActivity {
     public class ComprobaEstat extends AsyncTask<Void,Void,Boolean> {
 
         private String ip;
+        private String resposta;
 
         public ComprobaEstat(String ip){
             this.ip = ip;
@@ -210,6 +211,12 @@ public class MainClient extends AppCompatActivity {
                 socket = new Socket(ip,PORT);
 
                 status = socket.isConnected();
+
+                PrintStream output = new PrintStream(socket.getOutputStream());
+                output.println("wonder");
+
+                BufferedReader input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+                resposta = input.readLine();
 
                 socket.close();
 
@@ -230,6 +237,7 @@ public class MainClient extends AppCompatActivity {
             if (status){
                 imgStatus.setBackgroundColor(Color.rgb(0,255,0));
                 txtViewStatus.setText(R.string.conectat);
+                Toast.makeText(getApplicationContext(),resposta,Toast.LENGTH_SHORT).show();
 
             } else {
 
