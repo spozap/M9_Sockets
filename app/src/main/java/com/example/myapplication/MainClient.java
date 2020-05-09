@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Switch;
@@ -16,12 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainClient extends AppCompatActivity {
 
@@ -51,16 +52,47 @@ public class MainClient extends AppCompatActivity {
         imgStatus.setBackgroundColor(Color.rgb(255,0,0));
 
         tipusConexio.setChecked(false);
-        tipusConexio.setTextOff("Conexió manual");
-        tipusConexio.setTextOn("Conexió automàtica");
+        //tipusConexio.setTextOff("Conexió manual");
+        //tipusConexio.setTextOn("Conexió automàtica");
 
 
-        if(tipusConexio.isChecked()){
+        tipusConexio.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
 
-            // Si la opció de conexió automàtica està habilitada , es deshabilita el botó de conexió manual
-            connectBtn.setVisibility(View.GONE);
+                Timer timer = null;
 
-        }
+                if (b) {
+
+                    Toast.makeText(getApplicationContext(),"Conexió automàtica engegada",Toast.LENGTH_SHORT).show();
+
+                    // Desactivem els botons de conexió manual
+                    comandaBtn.setEnabled(false);
+                    connectBtn.setEnabled(false);
+
+                    int minuts = 5;
+                    timer = new Timer();
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                           EnviaServidor envia = new EnviaServidor();
+                           envia.execute(server.getText().toString(),comanda.getText().toString());
+                        }
+                    }, 0 , 1000*60*minuts );
+
+
+
+                } else {
+
+                    Toast.makeText(getApplicationContext(),"Conexió manual engegada",Toast.LENGTH_SHORT).show();
+
+                    comandaBtn.setEnabled(true);
+                    connectBtn.setEnabled(true);
+
+                }
+
+            }
+        });
 
         connectBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,73 +118,6 @@ public class MainClient extends AppCompatActivity {
                 }
             }
         });
-    }
-
-    public boolean conectar(String SERVER){
-        //flag per controlar cicle del programa
-        boolean exit=false;
-        //flag per s'ha fet la connexió al servidor
-        boolean connected = false;
-
-        //Socket per la comunicació client-servidor
-        Socket socket;
-        try {
-            System.out.println("*** Inici Client ***");
-            while( !exit ){
-
-                //Inicialitzem la connexió amb el servidor
-                socket = new Socket(SERVER, PORT);
-
-                // Si es connecta , cambiem el valor del boolea i modifiquem el color del semàfor i el txtView del estat
-                connected = true;
-
-                imgStatus.setBackgroundColor(Color.rgb(98,236,0));
-                txtViewStatus.setText(R.string.conectat);
-
-
-                //Dipòsit per llegir el que ens passi el servidor
-                BufferedReader input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
-
-                //Dipòsit per imprimir les dades del servidor
-                PrintStream output = new PrintStream(socket.getOutputStream());
-
-                //Dipòsit per recollir el que escriu l'usuari
-                BufferedReader brRequest = new BufferedReader(new InputStreamReader(System.in));
-                System.out.print("\nClient> Escriu una comanda: ");
-
-                //Variable amb el que l'usuari ha escrit
-                String request = brRequest.readLine();
-
-                //Enviament al servidor de la petició del client
-                output.println(request);
-
-                //Recollida des del servidor de la resposta a la petició
-                String st = input.readLine();
-
-                //Imprimim la resposta per pantalla
-                if( st != null )
-                    System.out.println("Servidor> " + st );
-
-                //Sortida del programa
-                if(request.equals("exit")){
-                    exit=true;
-                    System.out.println("\n**** Fi Client ****");
-                }
-                //Sortida del programa
-                if(request.equals("stop")){
-                    exit=true;
-                    System.out.println("\n**** Sayonara server ****");
-                }
-                socket.close();
-            }//end while
-        } catch (UnknownHostException e) {
-            connected = false;
-        } catch (IOException e) {
-            connected = false;
-        }
-
-        return  connected;
-
     }
 
     public class EnviaServidor extends AsyncTask<String,Void,String> {
