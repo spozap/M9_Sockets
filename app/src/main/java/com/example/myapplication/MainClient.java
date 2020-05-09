@@ -16,18 +16,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
 public class MainClient extends AppCompatActivity {
 
     private static final int PORT = 5000;
-    private static Button connectBtn;
-    private static EditText server;
+    private static Button connectBtn , comandaBtn ;
+    private static EditText server , comanda;
     private ImageView imgStatus;
-    private TextView txtViewStatus;
+    private TextView txtViewStatus,txtViewResposta;
     private Switch tipusConexio;
 
 
@@ -42,6 +44,9 @@ public class MainClient extends AppCompatActivity {
         imgStatus = findViewById(R.id.imgViewStatus);
         txtViewStatus = findViewById(R.id.txtViewStatus);
         tipusConexio = findViewById(R.id.tipusconexio);
+        txtViewResposta = findViewById(R.id.txtViewResposta);
+        comandaBtn = findViewById(R.id.comandaBtn);
+        comanda = findViewById(R.id.comandaTextView);
 
         imgStatus.setBackgroundColor(Color.rgb(255,0,0));
 
@@ -64,8 +69,20 @@ public class MainClient extends AppCompatActivity {
                 if(server.getText().toString().isEmpty()){
                     Toast.makeText(getApplicationContext(),"La direcció IP no pot estar buida!",Toast.LENGTH_SHORT).show();
                 } else {
-                    ComprobaEstat estat = new ComprobaEstat(server.getText().toString().trim());
+                    ComprobaEstat estat = new ComprobaEstat(server.getText().toString());
                     estat.execute();
+                }
+            }
+        });
+
+        comandaBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (comanda.getText().toString().isEmpty()){
+                    Toast.makeText(getApplicationContext(),"La comanda no pot estar buida!",Toast.LENGTH_SHORT).show();
+                } else {
+                    EnviaServidor envia = new EnviaServidor();
+                    envia.execute(server.getText().toString(),comanda.getText().toString().trim());
                 }
             }
         });
@@ -138,6 +155,43 @@ public class MainClient extends AppCompatActivity {
 
     }
 
+    public class EnviaServidor extends AsyncTask<String,Void,String> {
+
+        @Override
+        protected String doInBackground(String... strings) {
+
+            String ip = strings[0];
+            String resposta = "";
+            try{
+                Socket socket = new Socket(ip,PORT);
+
+                // Enviem peticio al servidor
+                PrintStream output = new PrintStream(socket.getOutputStream());
+                String peticio = strings[1];
+                output.println(peticio);
+
+                //Rebem la resposta
+                BufferedReader input = new BufferedReader( new InputStreamReader(socket.getInputStream()));
+                resposta = input.readLine();
+
+                socket.close();
+
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return resposta;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            txtViewResposta.setText(s);
+        }
+    }
+
     public class ComprobaEstat extends AsyncTask<Void,Void,Boolean> {
 
         private String ip;
@@ -174,8 +228,7 @@ public class MainClient extends AppCompatActivity {
             super.onPostExecute(status);
 
             if (status){
-
-                imgStatus.setBackgroundColor(Color.rgb(98,236,0));
+                imgStatus.setBackgroundColor(Color.rgb(0,255,0));
                 txtViewStatus.setText(R.string.conectat);
 
             } else {
